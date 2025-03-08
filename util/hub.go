@@ -53,14 +53,12 @@ func (h *Hub) Run() {
 			}
 			messageStr := string(messageData)
 
-			if room != nil {
-				for client := range room {
-					select {
-					case client.send <- []byte(messageStr):
-					default:
-						close(client.send)
-						delete(room, client)
-					}
+			for client := range room {
+				select {
+				case client.send <- []byte(messageStr):
+				default:
+					close(client.send)
+					delete(room, client)
 				}
 			}
 			if len(room) == 0 {

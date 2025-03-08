@@ -6,10 +6,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/gorilla/websocket"
 )
 
-func VerifyUser(username string, serverId string, sessionToken string) (bool, string) {
-	if sessionToken != "" {
+var userTokens map[*websocket.Conn]string = make(map[*websocket.Conn]string)
+
+func VerifyUser(username string, serverId string, sessionToken string, conn *websocket.Conn) (bool, string) {
+	if userTokens[conn] == sessionToken {
 		return true, sessionToken
 	}
 
@@ -23,8 +27,11 @@ func VerifyUser(username string, serverId string, sessionToken string) (bool, st
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		fmt.Print("Error reading body: " + err.Error())
+		return false, ""
 	}
 
 	var newToken = GenerateNewToken()
+
+	userTokens[conn] = newToken
 	return len(body) > 0, newToken
 }

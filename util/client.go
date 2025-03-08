@@ -108,16 +108,20 @@ func ServeWS(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	serverId := r.Header.Get("x-auth-serverId")
 	room := r.Header.Get("x-auth-room")
 	sessionToken := r.Header.Get("x-auth-sessionToken")
-	authenticated, newToken := VerifyUser(username, serverId, sessionToken)
-	if !authenticated {
-		http.Error(w, "Not authenticated", http.StatusUnauthorized)
-	}
-	w.Header().Add("x-auth-sessionToken", newToken)
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
+
+	authenticated, newToken := VerifyUser(username, serverId, sessionToken, conn)
+	if !authenticated {
+		http.Error(w, "Not authenticated", http.StatusUnauthorized)
+	}
+
+	w.Header().Add("x-auth-sessionToken", newToken)
+
 	client := &Client{hub: hub, conn: conn, room: room, send: make(chan []byte, 256)}
 	client.hub.Register <- client
 
