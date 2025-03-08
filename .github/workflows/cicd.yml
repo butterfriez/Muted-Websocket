@@ -16,16 +16,16 @@ jobs:
       - name: Login to docker hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
       - name: Build docker image
-        run: docker build -t radra/muted .
+        run: docker build -t radradio/muted .
       - name: Push image to docker hub
-        run: docker push radra/muted:latest
+        run: docker push radradio/muted:latest
   deploy:
     needs: build
     runs-on: self-hosted
     steps:
       - name: Pull docker image
-        run: docker pull radra/muted:latest
+        run: docker pull radradio/muted:latest
       - name: Delete old container
         run: docker rm -f muted-container  
       - name: Run docker container          
-        run: docker run -d -p 8080:8080 --name muted-container radra/muted
+        run: docker run -d -p 8080:8080 --name muted-container radradio/muted
